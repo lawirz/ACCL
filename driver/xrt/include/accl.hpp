@@ -813,8 +813,11 @@ ACCLRequest *barrier(communicatorId comm_id = GLOBAL_COMM,
       return std::unique_ptr<Buffer<dtype>>(new XRTBuffer<dtype>(
           length, type, *(static_cast<XRTDevice *>(cclo)->get_device()), (xrt::memory_group)mem_grp));
     } else {
-      return std::unique_ptr<Buffer<dtype>>(new CoyoteBuffer<dtype>(
-          length, type, cclo));
+      auto buf = std::unique_ptr<Buffer<dtype>>(new CoyoteBuffer<dtype>(
+						    length, type, cclo));
+      buf->sync_to_device();
+      return buf;
+      
     }
   }
 
