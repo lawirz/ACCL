@@ -881,8 +881,20 @@ ACCLRequest *barrier(communicatorId comm_id = GLOBAL_COMM,
     } else if(cclo->get_device_type() == CCLO::xrt_device ){
       return std::unique_ptr<Buffer<dtype>>(new XRTBuffer<dtype>(
           host_buffer, length, type, *(static_cast<XRTDevice *>(cclo)->get_device()), (xrt::memory_group)mem_grp));
+    } else {
+      // Coyote doesn't seem to offer Buffer construction from existing buffers.
+    std::cerr << "Coyote doesn't support constructing buffers "
+	         "from host-buffers. The returned buffer will not "
+	         "alias the original buffer."
+	      << std::endl;
+	
+      auto buf = std::unique_ptr<Buffer<dtype>>(new CoyoteBuffer<dtype>(
+						    length, type, cclo));
+      std::memcpy((void *) buf->buffer(), (void *) host_buffer, length * sizeof(dtype));
+      buf->sync_to_device();
+      return buf;
+      
     }
-    return std::unique_ptr<Buffer<dtype>>(nullptr);
   }
 
   /**

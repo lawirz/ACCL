@@ -153,12 +153,23 @@ template <typename dtype> class CoyoteBuffer : public Buffer<dtype> {
     {
       size_t start_bytes = start * sizeof(dtype);
       size_t end_bytes = end * sizeof(dtype);
+      size_t length_bytes = end_bytes - start_bytes;
 
-      dtype *offset_unaligned_buffer = nullptr;
+      
+      
 
-      debug("CoyoteBuffer::slice not yet implemented!!!");
-      // TODO: implement
-      return std::unique_ptr<BaseBuffer>(nullptr);
+      auto slice_buf = std::unique_ptr<Buffer<dtype>>(new CoyoteBuffer<dtype>(
+							  length_bytes, this->type(), this->device));
+      std::memcpy((void *) this->buffer(), (void *) slice_buf->buffer(), length_bytes);
+      std::cerr << "WARNING: Sliced Coyote-Buffers will not alias the"
+	  "original buffers, use host-side data"
+	  "and need unecessary copies. Should be avoided" 
+		<< std::endl;
+
+	  
+      // Buffers should be on device per default to keep it consistent with XRT
+      slice_buf->sync_to_device();						    
+      return slice_buf;
     }
 
     size_t size() const { return this->buffer_size; }
