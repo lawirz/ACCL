@@ -303,7 +303,9 @@ ACCLRequest *ACCL::copy(BaseBuffer *srcbuf, BaseBuffer *dstbuf, unsigned int cou
               << std::endl;
   }
 
-  if (from_fpga == false) {
+  // Only if we send data from host, but the buffer is on device, we sync
+  if (from_fpga == false && !srcbuf->is_host_only()) {
+    debug("Syncing to device");
     srcbuf->sync_to_device();
   }
 
@@ -319,7 +321,9 @@ ACCLRequest *ACCL::copy(BaseBuffer *srcbuf, BaseBuffer *dstbuf, unsigned int cou
 
   if (!run_async) {
     wait(handle);
-    if (to_fpga == false) {
+    // Only if we want the buf to be in host, but it was not directly sent there, we sync
+    if (to_fpga == false && !dstbuf->is_host_only()) {
+      debug("Syncing from device");
       dstbuf->sync_from_device();
     }
     check_return_value("copy", handle);
@@ -630,11 +634,15 @@ ACCLRequest *ACCL::reduce(BaseBuffer &sendbuf,
     return nullptr;
   }
 
-  if (from_fpga == false) {
-    auto slice = sendbuf.slice(0, count);
-    slice->sync_to_device();
+  if (from_fpga == false && !sendbuf.is_host_only()) {
+    if (cclo->get_device_type() == CCLO::coyote_device){
+      sendbuf.sync_to_device();	    
+    } else {
+      auto slice = sendbuf.slice(0, count);
+      slice->sync_to_device();
+    }
   }
-
+  
   options.scenario = operation::reduce;
   options.comm = communicator.communicators_addr();
   options.addr_0 = &sendbuf;
@@ -648,9 +656,13 @@ ACCLRequest *ACCL::reduce(BaseBuffer &sendbuf,
 
   if (!run_async) {
     wait(handle);
-    if (to_fpga == false && is_root == true) {
-      auto slice = recvbuf.slice(0, count);
-      slice->sync_from_device();
+    if (is_root == true && to_fpga == false && !recvbuf.is_host_only()) {
+      if (cclo->get_device_type() == CCLO::coyote_device){
+	recvbuf.sync_from_device();	    
+      } else {
+	auto slice = recvbuf.slice(0, count);
+	slice->sync_from_device();
+      }
     }
     check_return_value("reduce", handle);
   }
@@ -694,9 +706,13 @@ ACCLRequest *ACCL::reduce(dataType src_data_type,
 
   if (!run_async) {
     wait(handle);
-    if (to_fpga == false && is_root == true) {
-      auto slice = recvbuf.slice(0, count);
-      slice->sync_from_device();
+    if (is_root == true && to_fpga == false && !recvbuf.is_host_only()) {
+      if (cclo->get_device_type() == CCLO::coyote_device){
+	recvbuf.sync_from_device();	    
+      } else {
+	auto slice = recvbuf.slice(0, count);
+	slice->sync_from_device();
+      }
     }
     check_return_value("reduce", handle);
   }
@@ -718,9 +734,13 @@ ACCLRequest *ACCL::reduce(BaseBuffer &sendbuf, dataType dst_data_type,
     return nullptr;
   }
 
-  if (from_fpga == false) {
-    auto slice = sendbuf.slice(0, count);
-    slice->sync_to_device();
+  if (from_fpga == false && !sendbuf.is_host_only()) {
+    if (cclo->get_device_type() == CCLO::coyote_device){
+      sendbuf.sync_to_device();	    
+    } else {
+      auto slice = sendbuf.slice(0, count);
+      slice->sync_to_device();
+    }
   }
 
   options.scenario = operation::reduce;
@@ -797,11 +817,15 @@ ACCLRequest *ACCL::allreduce(BaseBuffer &sendbuf,
     return nullptr;
   }
 
-  if (from_fpga == false) {
-    auto slice = sendbuf.slice(0, count);
-    slice->sync_to_device();
+  if (from_fpga == false && !sendbuf.is_host_only()) {
+    if (cclo->get_device_type() == CCLO::coyote_device){
+      sendbuf.sync_to_device();	    
+    } else {
+      auto slice = sendbuf.slice(0, count);
+      slice->sync_to_device();
+    }
   }
-
+  
   options.scenario = operation::allreduce;
   options.comm = communicator.communicators_addr();
   options.addr_0 = &sendbuf;
@@ -815,9 +839,13 @@ ACCLRequest *ACCL::allreduce(BaseBuffer &sendbuf,
 
   if (!run_async) {
     wait(handle);
-    if (to_fpga == false) {
-      auto slice = recvbuf.slice(0, count);
-      slice->sync_from_device();
+    if (to_fpga == false && !recvbuf.is_host_only()) {
+      if (cclo->get_device_type() == CCLO::coyote_device){
+	recvbuf.sync_from_device();	    
+      } else {
+	auto slice = recvbuf.slice(0, count);
+	slice->sync_from_device();
+      }
     }
     check_return_value("allreduce", handle);
   }
@@ -846,11 +874,15 @@ ACCLRequest *ACCL::reduce_scatter(BaseBuffer &sendbuf,
     return nullptr;
   }
 
-  if (from_fpga == false) {
-    auto slice = sendbuf.slice(0, count * communicator.get_ranks()->size());
-    slice->sync_to_device();
+  if (from_fpga == false && !sendbuf.is_host_only()) {
+    if (cclo->get_device_type() == CCLO::coyote_device){
+      sendbuf.sync_to_device();	    
+    } else {
+      auto slice = sendbuf.slice(0, count);
+      slice->sync_to_device();
+    }
   }
-
+  
   options.scenario = operation::reduce_scatter;
   options.comm = communicator.communicators_addr();
   options.addr_0 = &sendbuf;
@@ -863,9 +895,13 @@ ACCLRequest *ACCL::reduce_scatter(BaseBuffer &sendbuf,
 
   if (!run_async) {
     wait(handle);
-    if (to_fpga == false) {
-      auto slice = recvbuf.slice(0, count);
-      slice->sync_from_device();
+    if (to_fpga == false && !recvbuf.is_host_only()) {
+      if (cclo->get_device_type() == CCLO::coyote_device){
+	recvbuf.sync_from_device();	    
+      } else {
+	auto slice = recvbuf.slice(0, count);
+	slice->sync_from_device();
+      }
     }
     check_return_value("reduce_scatter", handle);
   }
@@ -900,9 +936,13 @@ ACCLRequest *ACCL::alltoall(BaseBuffer &sendbuf, BaseBuffer &recvbuf, unsigned i
               << std::endl;
   }
 
-  if (from_fpga == false) {
-    auto slice = sendbuf.slice(0, count * communicator.get_ranks()->size());
-    slice->sync_to_device();
+  if (from_fpga == false && !sendbuf.is_host_only()) {
+    if (cclo->get_device_type() == CCLO::coyote_device){
+      sendbuf.sync_to_device();	    
+    } else {
+      auto slice = sendbuf.slice(0, count * communicator.get_ranks()->size());
+      slice->sync_to_device();
+    }
   }
 
   options.scenario = operation::alltoall;
@@ -917,9 +957,13 @@ ACCLRequest *ACCL::alltoall(BaseBuffer &sendbuf, BaseBuffer &recvbuf, unsigned i
 
   if (!run_async) {
     wait(handle);
-    if (to_fpga == false) {
-      auto slice = recvbuf.slice(0, count * communicator.get_ranks()->size());
-      slice->sync_from_device();
+    if (to_fpga == false && !recvbuf.is_host_only()) {
+      if (cclo->get_device_type() == CCLO::coyote_device){
+	recvbuf.sync_from_device();	    
+      } else {
+	auto slice = recvbuf.slice(0, count * communicator.get_ranks()->size());
+	slice->sync_from_device();
+      }
     }
     check_return_value("alltoall", handle);
   }
@@ -1353,6 +1397,9 @@ void ACCL::prepare_call(CCLO::Options &options) {
   }
 
   options.arithcfg_addr = arithcfg->addr();
+
+
+  debug("Host flags:" + std::to_string(static_cast<int>(options.host_flags)));
 }
 
 // Request handling

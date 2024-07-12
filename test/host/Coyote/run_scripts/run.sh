@@ -8,7 +8,7 @@ fi
 
 # state variables
 mkdir -p "$(pwd)/accl_log"
-BUILD_DIR=../build
+BUILD_DIR=..
 EXEC=$BUILD_DIR/accl_on_coyote
 HOST_FILE=./accl_log/host
 FPGA_FILE=./accl_log/fpga
@@ -50,15 +50,16 @@ echo "Run command: $EXEC $ARG -y $TEST_MODE -c 1024 -l $FPGA_FILE"
 
 rm -f $(pwd)/accl_log/rank*
 
-for NP in `seq 4 $NUM_PROCESS`; do
+# for NP in `seq 4 $NUM_PROCESS`; do
 	for MODE in ${TEST_MODE[@]}; do
 		for N_ELE in ${N_ELEMENTS[@]}; do
 			for H in ${HOST[@]}; do
 				for P in ${PROTOC[@]}; do
 					N=$N_ELE
-					echo "mpirun -n $NP -f $HOST_FILE --iface ens4 $EXEC $ARG -z $H -y $MODE -c $N -l $FPGA_FILE -p $P -n $NRUN &"
-					mpirun -n $NP -f $HOST_FILE --iface ens4f0 -outfile-pattern "./accl_log/rank_%r_M_${MODE}_N_${N}_H_${H}_P_${P}_stdout" -errfile-pattern "./accl_log/rank_%r_M_${MODE}_N_${N}_H_${H}_P_${P}_stdout" $EXEC $ARG -z $H -y $MODE -c $N -l $FPGA_FILE -p $P -n $NRUN &
-					SLEEPTIME=2
+					# echo "mpirun -n $NUM_PROCESS -f $HOST_FILE --iface ens4f0 -outfile-pattern \"./accl_log/rank_%r_M_${MODE}_N_${N}_H_${H}_P_${P}_stdout\" -errfile-pattern \"./accl_log/rank_%r_M_${MODE}_N_${N}_H_${H}_P_${P}_stdout\" $EXEC $ARG -z $H -y $MODE -c $N -l $FPGA_FILE -p $P -n $NRUN &"
+					mpirun -n $NUM_PROCESS -f $HOST_FILE --iface ens4f0 -outfile-pattern "./accl_log/rank_%r_M_${MODE}_N_${N}_H_${H}_P_${P}_stdout" -errfile-pattern "./accl_log/rank_%r_M_${MODE}_N_${N}_H_${H}_P_${P}_stderr" $EXEC $ARG -z $H -y $MODE -c $N -l $FPGA_FILE -p $P -n $NRUN &
+					# mpirun -n $NUM_PROCESS -f $HOST_FILE --iface ens4f0 -outfile-pattern "./accl_log/rank_%r_M_${MODE}_N_${N}_H_${H}_P_${P}_stdout" $EXEC $ARG -z $H -y $MODE -c $N -l $FPGA_FILE -p $P -n $NRUN &
+					SLEEPTIME=16
 					sleep $SLEEPTIME
 					parallel-ssh -H "$HOST_LIST" "kill -9 \$(ps -aux | grep accl_on_coyote | awk '{print \$2}')"
 					parallel-ssh -H "$HOST_LIST" "dmesg | grep "fpga_tlb_miss_isr" >$(pwd)/accl_log/tlb_miss.log"
@@ -66,7 +67,7 @@ for NP in `seq 4 $NUM_PROCESS`; do
 			done
 		done
 	done
-done
+# done
 
 mkdir -p "$(pwd)/accl_results"
 # Loop through accl log files in the source directory and append to accl_results folder

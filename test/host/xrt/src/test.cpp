@@ -66,6 +66,10 @@ TEST_F(ACCLTest, test_copy_p2p) {
   if(::size > 1){
     GTEST_SKIP() << "Skipping single-node test on multi-node setup";
   }
+  if(options.cyt_rdma){
+    GTEST_SKIP() << "Skipping p2p test, as p2p is not supported in Coyote";
+  }
+  
   unsigned int count = options.count;
   auto op_buf = accl->create_buffer<float>(count, dataType::float32);
   std::unique_ptr<ACCL::Buffer<float>> p2p_buf;
