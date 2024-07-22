@@ -178,6 +178,14 @@ public:
   }
 
   /**
+   * Check if the buffer is currently in host memory.
+   *
+   */
+  bool is_host() const override { 
+    return is_host_only();
+  }
+
+  /**
    * Sync the data from the device back to the host. Will copy the data from
    * the aligned buffer to the unaligned buffer if an unaligned buffer was used
    * during construction of the XRTBuffer.

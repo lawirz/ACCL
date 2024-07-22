@@ -254,7 +254,13 @@ public:
    * Check if the buffer is host-only, always false in sim.
    *
    */
-  bool is_host_only() const override { return host; }
+  bool is_host_only() const override { return false; }
+
+  /**
+   * Check if the buffer is in host memory.
+   *
+   */
+  bool is_host() const override { return host; }
 
   /**
    * Sync the user BO buffer to the simulated buffer.

@@ -102,7 +102,17 @@ template <typename dtype> class CoyoteBuffer : public Buffer<dtype> {
     */
     bool is_host_only() const override
     {
-      // std::cerr << "check is_host_only: " << std::setbase(16) << (uint64_t)this->aligned_buffer << ", host_flag: " << std::setbase(10) << this->host_flag << std::endl;
+      return false;
+    }
+
+    /**
+    * Check if buffer is currently in host memory.
+    *
+    * @return true   The buffer is in host memory.
+    * @return false  The buffer is not in host memory.
+    */
+    bool is_host() const override
+    {
       return this->host_flag;
     }
 

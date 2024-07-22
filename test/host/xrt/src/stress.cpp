@@ -27,8 +27,8 @@ TEST_F(ACCLTest, test_stress_sndrcv) {
   int next_rank = (::rank + 1) % ::size;
   int prev_rank = (::rank + ::size - 1) % ::size;
   for(unsigned int i=0; i<2000; i++) {
-    accl->send(*buf, count, next_rank, 0, 0, true);
-    accl->recv(*buf, count, prev_rank, 0, 0, true);
+    accl->send(*buf, count, next_rank);
+    accl->recv(*buf, count, prev_rank);
   }
   EXPECT_TRUE(true);
 }

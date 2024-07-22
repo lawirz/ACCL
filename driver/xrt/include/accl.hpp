@@ -157,7 +157,6 @@ public:
    * @param dst            Destination rank to send data to.
    * @param tag            Tag of send operation.
    * @param comm_id        Index of communicator to use.
-   * @param from_fpga      Set to true if the data is already on the FPGA.
    * @param stream_flags   Stream flags to use.
    * @param compress_dtype Datatype to compress buffers to over ethernet.
    * @param run_async      Run the ACCL call asynchronously.
@@ -168,7 +167,6 @@ public:
    */
   ACCLRequest *send(BaseBuffer &srcbuf, unsigned int count, unsigned int dst,
                     unsigned int tag = TAG_ANY, communicatorId comm_id = GLOBAL_COMM,
-                    bool from_fpga = false,
                     dataType compress_dtype = dataType::none, bool run_async = false,
                     std::vector<ACCLRequest *> waitfor = {});
 
@@ -201,7 +199,6 @@ public:
    * @param dst            Destination rank to send data to.
    * @param stream_id      ID of target stream on destination rank. IDs 0-8 are reserved, throws exception if set in this range.
    * @param comm_id        Index of communicator to use.
-   * @param from_fpga      Set to true if the data is already on the FPGA.
    * @param stream_flags   Stream flags to use. Note that only OP0_STREAM is relevant.
    * @param compress_dtype Datatype to compress buffers to over ethernet.
    * @param run_async      Run the ACCL call asynchronously.
@@ -212,7 +209,7 @@ public:
    */
   ACCLRequest *stream_put(BaseBuffer &srcbuf, unsigned int count,
                           unsigned int dst, unsigned int stream_id, communicatorId comm_id = GLOBAL_COMM,
-                          bool from_fpga = false, dataType compress_dtype = dataType::none,
+                          dataType compress_dtype = dataType::none,
                           bool run_async = false, std::vector<ACCLRequest *> waitfor = {});
 
     /**
@@ -244,7 +241,6 @@ public:
    * @param src            Source rank to receive data from.
    * @param tag            Tag of receive operation.
    * @param comm_id        Index of communicator to use.
-   * @param to_fpga        Set to true if the data will be used on the FPGA
    *                       only.
    * @param compress_dtype Datatype to compress buffers to over ethernet.
    * @param run_async      Run the ACCL call asynchronously.
@@ -255,7 +251,6 @@ public:
    */
   ACCLRequest *recv(BaseBuffer &dstbuf, unsigned int count, unsigned int src,
                     unsigned int tag = TAG_ANY, communicatorId comm_id = GLOBAL_COMM,
-                    bool to_fpga = false,
                     dataType compress_dtype = dataType::none, bool run_async = false,
                     std::vector<ACCLRequest *> waitfor = {});
 
@@ -288,9 +283,6 @@ public:
    * @param dstbuf         Buffer where the data should be stored to. Create a
    *                       buffer using ACCL::create_buffer.
    * @param count          Amount of elements in buffer to copy.
-   * @param from_fpga      Set to true if the data is already on the FPGA.
-   * @param to_fpga        Set to true if the copied data will be used on the
-   *                       FPGA only.
    * @param run_async      Run the ACCL call asynchronously.
    * @param waitfor        ACCL call will wait for these operations before it
    *                       will start. Currently not implemented.
@@ -298,7 +290,6 @@ public:
    *                       status
    */
   ACCLRequest *copy(BaseBuffer &srcbuf, BaseBuffer &dstbuf, unsigned int count,
-                    bool from_fpga = false, bool to_fpga = false,
                     bool run_async = false, std::vector<ACCLRequest *> waitfor = {});
 
   /**
@@ -307,7 +298,6 @@ public:
    * @param dstbuf         Buffer where the data should be stored to. Create a
    *                       buffer using ACCL::create_buffer.
    * @param count          Amount of elements in buffer to copy.
-   * @param to_fpga        Set to true if the data is already on the FPGA.
    * @param run_async      Run the ACCL call asynchronously.
    * @param waitfor        ACCL call will wait for these operations before it
    *                       will start. Currently not implemented.
@@ -315,7 +305,6 @@ public:
    *                       status
    */
   ACCLRequest *copy_from_stream(BaseBuffer &dstbuf, unsigned int count,
-                    bool to_fpga = false,
                     bool run_async = false, std::vector<ACCLRequest *> waitfor = {});
 
   /**
@@ -324,7 +313,6 @@ public:
    * @param srcbuf         Buffer that contains the data to be copied. Create a
    *                       buffer using ACCL::create_buffer.
    * @param count          Amount of elements in buffer to copy.
-   * @param from_fpga      Set to true if the data is already on the FPGA.
    * @param run_async      Run the ACCL call asynchronously.
    * @param waitfor        ACCL call will wait for these operations before it
    *                       will start. Currently not implemented.
@@ -332,7 +320,6 @@ public:
    *                       status
    */
   ACCLRequest *copy_to_stream(BaseBuffer &srcbuf, unsigned int count,
-                    bool from_fpga = false,
                     bool run_async = false, std::vector<ACCLRequest *> waitfor = {});
 
   /**
@@ -362,12 +349,6 @@ public:
    *                        ACCL::create_buffer.
    * @param result          Buffer where the result should be stored to. Create
    *                        a buffer using ACCL::create_buffer.
-   * @param val1_from_fpga  Set to true if the data of the first buffer is
-   *                        already on the FPGA.
-   * @param val2_from_fpga  Set to true if the data of the second buffer is
-   *                        already on the FPGA.
-   * @param to_fpga         Set to true if the copied data will be used on the
-   *                        FPGA only.
    * @param run_async       Run the ACCL call asynchronously.
    * @param waitfor         ACCL call will wait for these operations before it
    *                        will start. Currently not implemented.
@@ -376,8 +357,7 @@ public:
    */
   ACCLRequest *combine(unsigned int count, reduceFunction function, BaseBuffer &val1,
                       BaseBuffer &val2, BaseBuffer &result,
-                      bool val1_from_fpga = false, bool val2_from_fpga = false,
-                      bool to_fpga = false, bool run_async = false,
+                      bool run_async = false,
                       std::vector<ACCLRequest *> waitfor = {});
 
   /**
@@ -389,9 +369,6 @@ public:
    * @param count          Amount of elements in buffer to broadcast.
    * @param root           Rank to broadcast the data from.
    * @param comm_id        Index of communicator to use.
-   * @param from_fpga      Set to true if the data is already on the FPGA.
-   * @param to_fpga        Set to true if the copied data will be used on the
-   *                       FPGA only.
    * @param compress_dtype Datatype to compress buffers to over ethernet.
    * @param run_async      Run the ACCL call asynchronously.
    * @param waitfor        ACCL call will wait for these operations before it
@@ -400,8 +377,8 @@ public:
    *                       status
    */
   ACCLRequest *bcast(BaseBuffer &buf, unsigned int count, unsigned int root,
-                     communicatorId comm_id = GLOBAL_COMM, bool from_fpga = false,
-                     bool to_fpga = false, dataType compress_dtype = dataType::none,
+                     communicatorId comm_id = GLOBAL_COMM,
+                     dataType compress_dtype = dataType::none,
                      bool run_async = false, std::vector<ACCLRequest *> waitfor = {});
 
   /**
@@ -417,9 +394,6 @@ public:
    * @param count          Amount of elements to scatter per rank.
    * @param root           Rank to scatter the data from.
    * @param comm_id        Index of communicator to use.
-   * @param from_fpga      Set to true if the data is already on the FPGA.
-   * @param to_fpga        Set to true if the scattered data will be used on the
-   *                       FPGA only.
    * @param compress_dtype Datatype to compress buffers to over ethernet.
    * @param run_async      Run the ACCL call asynchronously.
    * @param waitfor        ACCL call will wait for these operations before it
@@ -429,7 +403,6 @@ public:
    */
   ACCLRequest *scatter(BaseBuffer &sendbuf, BaseBuffer &recvbuf, unsigned int count,
                        unsigned int root, communicatorId comm_id = GLOBAL_COMM,
-                       bool from_fpga = false, bool to_fpga = false,
                        dataType compress_dtype = dataType::none,
                        bool run_async = false, std::vector<ACCLRequest *> waitfor = {});
 
@@ -446,9 +419,6 @@ public:
    * @param count          Amount of elements to gather per rank.
    * @param root           Rank to gather the data to.
    * @param comm_id        Index of communicator to use.
-   * @param from_fpga      Set to true if the data is already on the FPGA.
-   * @param to_fpga        Set to true if the gathered data will be used on the
-   *                       FPGA only.
    * @param compress_dtype Datatype to compress buffers to over ethernet.
    * @param run_async      Run the ACCL call asynchronously.
    * @param waitfor        ACCL call will wait for these operations before it
@@ -458,7 +428,6 @@ public:
    */
   ACCLRequest *gather(BaseBuffer &sendbuf, BaseBuffer &recvbuf, unsigned int count,
                       unsigned int root, communicatorId comm_id = GLOBAL_COMM,
-                      bool from_fpga = false, bool to_fpga = false,
                       dataType compress_dtype = dataType::none, bool run_async = false,
                       std::vector<ACCLRequest *> waitfor = {});
 
@@ -473,9 +442,6 @@ public:
    *                       ACCL::create_buffer.
    * @param count          Amount of elements to gather per rank.
    * @param comm_id        Index of communicator to use.
-   * @param from_fpga      Set to true if the data is already on the FPGA.
-   * @param to_fpga        Set to true if the gathered data will be used on the
-   *                       FPGA only.
    * @param compress_dtype Datatype to compress buffers to over ethernet.
    * @param run_async      Run the ACCL call asynchronously.
    * @param waitfor        ACCL call will wait for these operations before it
@@ -484,8 +450,7 @@ public:
    *                       status
    */
   ACCLRequest *allgather(BaseBuffer &sendbuf, BaseBuffer &recvbuf, unsigned int count,
-                         communicatorId comm_id = GLOBAL_COMM, bool from_fpga = false,
-                         bool to_fpga = false,
+                         communicatorId comm_id = GLOBAL_COMM,
                          dataType compress_dtype = dataType::none,
                          bool run_async = false, std::vector<ACCLRequest *> waitfor = {});
 
@@ -501,9 +466,6 @@ public:
    * @param root           Rank to reduce the data to.
    * @param func           Reduce function to use.
    * @param comm_id        Index of communicator to use.
-   * @param from_fpga      Set to true if the data is already on the FPGA.
-   * @param to_fpga        Set to true if the reduced data will be used on the
-   *                       FPGA only.
    * @param compress_dtype Datatype to compress buffers to over ethernet.
    * @param run_async      Run the ACCL call asynchronously.
    * @param waitfor        ACCL call will wait for these operations before it
@@ -513,8 +475,8 @@ public:
    */
   ACCLRequest *reduce(BaseBuffer &sendbuf, BaseBuffer &recvbuf, unsigned int count,
                       unsigned int root, reduceFunction func,
-                      communicatorId comm_id = GLOBAL_COMM, bool from_fpga = false,
-                      bool to_fpga = false, dataType compress_dtype = dataType::none,
+                      communicatorId comm_id = GLOBAL_COMM,
+                      dataType compress_dtype = dataType::none,
                       bool run_async = false, std::vector<ACCLRequest *> waitfor = {});
 
   /**
@@ -528,8 +490,6 @@ public:
    * @param root           Rank to reduce the data to.
    * @param func           Reduce function to use.
    * @param comm_id        Index of communicator to use.
-   * @param to_fpga        Set to true if the reduced data will be used on the
-   *                       FPGA only.
    * @param compress_dtype Datatype to compress buffers to over ethernet.
    * @param run_async      Run the ACCL call asynchronously.
    * @param waitfor        ACCL call will wait for these operations before it
@@ -540,7 +500,7 @@ public:
   ACCLRequest *reduce(dataType src_data_type, BaseBuffer &recvbuf, unsigned int count, 
                       unsigned int root, reduceFunction func, 
                       communicatorId comm_id = GLOBAL_COMM,
-                      bool to_fpga = false, dataType compress_dtype = dataType::none,
+                      dataType compress_dtype = dataType::none,
                       bool run_async = false, std::vector<ACCLRequest *> waitfor = {});
 
   /**
@@ -553,9 +513,6 @@ public:
    * @param root           Rank to reduce the data to.
    * @param func           Reduce function to use.
    * @param comm_id        Index of communicator to use.
-   * @param from_fpga      Set to true if the data is already on the FPGA.
-   * @param to_fpga        Set to true if the reduced data will be used on the
-   *                       FPGA only.
    * @param compress_dtype Datatype to compress buffers to over ethernet.
    * @param run_async      Run the ACCL call asynchronously.
    * @param waitfor        ACCL call will wait for these operations before it
@@ -565,7 +522,7 @@ public:
    */
   ACCLRequest *reduce(BaseBuffer &sendbuf, dataType dst_data_type, unsigned int count,
                       unsigned int root, reduceFunction func,
-                      communicatorId comm_id = GLOBAL_COMM, bool from_fpga = false,
+                      communicatorId comm_id = GLOBAL_COMM,
                       dataType compress_dtype = dataType::none,
                       bool run_async = false, std::vector<ACCLRequest *> waitfor = {});
 
@@ -578,8 +535,6 @@ public:
    * @param root           Rank to reduce the data to.
    * @param func           Reduce function to use.
    * @param comm_id        Index of communicator to use.
-   * @param to_fpga        Set to true if the reduced data will be used on the
-   *                       FPGA only.
    * @param compress_dtype Datatype to compress buffers to over ethernet.
    * @param run_async      Run the ACCL call asynchronously.
    * @param waitfor        ACCL call will wait for these operations before it
@@ -603,9 +558,6 @@ public:
    * @param count          Amount of elements to reduce.
    * @param func           Reduce function to use.
    * @param comm_id        Index of communicator to use.
-   * @param from_fpga      Set to true if the data is already on the FPGA.
-   * @param to_fpga        Set to true if the reduced data will be used on the
-   *                       FPGA only.
    * @param compress_dtype Datatype to compress buffers to over ethernet.
    * @param run_async      Run the ACCL call asynchronously.
    * @param waitfor        ACCL call will wait for these operations before it
@@ -615,7 +567,6 @@ public:
    */
   ACCLRequest *allreduce(BaseBuffer &sendbuf, BaseBuffer &recvbuf, unsigned int count,
                          reduceFunction func, communicatorId comm_id = GLOBAL_COMM,
-                         bool from_fpga = false, bool to_fpga = false,
                          dataType compress_dtype = dataType::none,
                          bool run_async = false, std::vector<ACCLRequest *> waitfor = {});
 
@@ -630,9 +581,6 @@ public:
    * @param count          Amount of elements to reduce per rank.
    * @param func           Reduce function to use.
    * @param comm_id        Index of communicator to use.
-   * @param from_fpga      Set to true if the data is already on the FPGA.
-   * @param to_fpga        Set to true if the reduced data will be used on the
-   *                       FPGA only.
    * @param compress_dtype Datatype to compress buffers to over ethernet.
    * @param run_async      Run the ACCL call asynchronously.
    * @param waitfor        ACCL call will wait for these operations before it
@@ -643,7 +591,6 @@ public:
   ACCLRequest *reduce_scatter(BaseBuffer &sendbuf, BaseBuffer &recvbuf,
                               unsigned int count, reduceFunction func,
                               communicatorId comm_id = GLOBAL_COMM,
-                              bool from_fpga = false, bool to_fpga = false,
                               dataType compress_dtype = dataType::none,
                               bool run_async = false,
                               std::vector<ACCLRequest *> waitfor = {});
@@ -658,9 +605,6 @@ public:
    *                       ACCL::create_buffer.
    * @param count          Amount of elements to shuffle per rank.
    * @param comm_id        Index of communicator to use.
-   * @param from_fpga      Set to true if the data is already on the FPGA.
-   * @param to_fpga        Set to true if the gathered data will be used on the
-   *                       FPGA only.
    * @param compress_dtype Datatype to compress buffers to over ethernet.
    * @param run_async      Run the ACCL call asynchronously.
    * @param waitfor        ACCL call will wait for these operations before it
@@ -669,8 +613,7 @@ public:
    *                       status
    */
   ACCLRequest *alltoall(BaseBuffer &sendbuf, BaseBuffer &recvbuf, unsigned int count,
-                         communicatorId comm_id = GLOBAL_COMM, bool from_fpga = false,
-                         bool to_fpga = false,
+                         communicatorId comm_id = GLOBAL_COMM,
                          dataType compress_dtype = dataType::none,
                          bool run_async = false, std::vector<ACCLRequest *> waitfor = {});
 
@@ -684,7 +627,7 @@ public:
    *                       status
    *
    */
-ACCLRequest *barrier(communicatorId comm_id = GLOBAL_COMM,
+  ACCLRequest *barrier(communicatorId comm_id = GLOBAL_COMM,
                std::vector<ACCLRequest *> waitfor = {});
 
   /**
@@ -1109,7 +1052,7 @@ private:
   const std::vector<int> rxbufmem;
 
   ACCLRequest *copy(BaseBuffer *srcbuf, BaseBuffer *dstbuf, unsigned int count,
-                 bool from_fpga, bool to_fpga, streamFlags stream_flags,
+                 streamFlags stream_flags,
                  dataType data_type, bool run_async,
                  std::vector<ACCLRequest *> waitfor);
 

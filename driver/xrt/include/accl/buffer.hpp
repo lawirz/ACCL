@@ -92,6 +92,14 @@ public:
   virtual bool is_host_only() const = 0;
 
   /**
+   * Check if buffer is currently in host memory.
+   *
+   * @return true   The buffer is in host memory.
+   * @return false  The buffer is not in host memory.
+   */
+  virtual bool is_host() const = 0;
+
+  /**
    * Sync bo to device if necessary for simulated buffers.
    *
    */

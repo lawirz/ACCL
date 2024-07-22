@@ -24,38 +24,38 @@
 
 TEST_P(ACCLSweepBenchmark, benchmark_sendrecv) {
   if(::rank == 0){
-    duration = accl->get_duration(accl->send(*buf_0, std::pow(2,GetParam()), 1, 0, GLOBAL_COMM, true));
+    duration = accl->get_duration(accl->send(*buf_0, std::pow(2,GetParam()), 1));
   } else if(::rank == 1) {
-    duration = accl->get_duration(accl->recv(*buf_0, std::pow(2,GetParam()), 0, 0, GLOBAL_COMM, true));
+    duration = accl->get_duration(accl->recv(*buf_0, std::pow(2,GetParam()), 0));
   }
 }
 
 TEST_P(ACCLSweepBenchmark, benchmark_broadcast) {
-  duration = accl->get_duration(accl->bcast(*buf_0, std::pow(2,GetParam()), 0, GLOBAL_COMM, true, true));
+  duration = accl->get_duration(accl->bcast(*buf_0, std::pow(2,GetParam()), 0));
 }
 
 TEST_P(ACCLSweepBenchmark, benchmark_scatter) {
-  duration = accl->get_duration(accl->scatter(*buf_0, *buf_1, std::pow(2,GetParam()), 0, GLOBAL_COMM, true, true));
+  duration = accl->get_duration(accl->scatter(*buf_0, *buf_1, std::pow(2,GetParam()), 0));
 }
 
 TEST_P(ACCLSweepBenchmark, benchmark_allreduce) {
-  duration = accl->get_duration(accl->allreduce(*buf_0, *buf_1, std::pow(2,GetParam()), reduceFunction::SUM, GLOBAL_COMM, true, true));
+  duration = accl->get_duration(accl->allreduce(*buf_0, *buf_1, std::pow(2,GetParam()), reduceFunction::SUM));
 }
 
 TEST_P(ACCLSweepBenchmark, benchmark_reduce) {
-  duration = accl->get_duration(accl->reduce(*buf_0, *buf_1, std::pow(2,GetParam()), 0, reduceFunction::SUM, GLOBAL_COMM, true, true));
+  duration = accl->get_duration(accl->reduce(*buf_0, *buf_1, std::pow(2,GetParam()), 0, reduceFunction::SUM));
 }
 
 TEST_P(ACCLSweepBenchmark, benchmark_reduce_scatter) {
-  duration = accl->get_duration(accl->reduce_scatter(*buf_0, *buf_1, std::pow(2,GetParam()), reduceFunction::SUM, GLOBAL_COMM, true, true));
+  duration = accl->get_duration(accl->reduce_scatter(*buf_0, *buf_1, std::pow(2,GetParam()), reduceFunction::SUM));
 }
 
 TEST_P(ACCLSweepBenchmark, benchmark_allgather) {
-  duration = accl->get_duration(accl->allgather(*buf_0, *buf_1, std::pow(2,GetParam()), GLOBAL_COMM, true, true));
+  duration = accl->get_duration(accl->allgather(*buf_0, *buf_1, std::pow(2,GetParam())));
 }
 
 TEST_P(ACCLSweepBenchmark, benchmark_gather) {
-  duration = accl->get_duration(accl->gather(*buf_0, *buf_1, std::pow(2,GetParam()), 0, GLOBAL_COMM, true, true));
+  duration = accl->get_duration(accl->gather(*buf_0, *buf_1, std::pow(2,GetParam()), 0));
 }
 
 INSTANTIATE_TEST_SUITE_P(sweep_benchmarks, ACCLSweepBenchmark, testing::Range(4, 20));
