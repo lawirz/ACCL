@@ -758,7 +758,6 @@ public:
     } else {
       auto buf = std::unique_ptr<Buffer<dtype>>(new CoyoteBuffer<dtype>(
 						    length, type, cclo));
-      buf->sync_to_device();
       return buf;
       
     }
@@ -834,7 +833,6 @@ public:
       auto buf = std::unique_ptr<Buffer<dtype>>(new CoyoteBuffer<dtype>(
 						    length, type, cclo));
       std::memcpy((void *) buf->buffer(), (void *) host_buffer, length * sizeof(dtype));
-      buf->sync_to_device();
       return buf;
       
     }
