@@ -72,12 +72,16 @@ class TestEnvironment : public ::testing::Environment {
       } else if (options.cyt_rdma) {
         design = acclDesign::CYT_RDMA;
       }
+
+      MPI_Barrier(MPI_COMM_WORLD);
       
       if(options.hardware){
         if(options.cyt_rdma) {
           cyt_dev = new ACCL::CoyoteDevice(::size);
+	  configure_cyt_rdma(ranks, ::rank, cyt_dev);
         } else if (options.cyt_tcp){
           cyt_dev = new ACCL::CoyoteDevice();
+	  configure_cyt_tcp(ranks, ::rank, cyt_dev);
         } else {
           dev = xrt::device(options.device_index);
         }
